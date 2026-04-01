@@ -1,7 +1,5 @@
 # [README.md](http://README.md)
 
-
-
 # Goal
 
 Launch the Gemma3 model on GKE (Google cloud) GPU, verify, test interactively and teardown.
@@ -30,19 +28,35 @@ flowchart LR
     USER -- "interact" --> CHAT
 ```
 
-# Rough Cost/Throughput 
+# Toolstack
+
+- Cursor / VSCode
+- Testing tools (choose from):
+  - pytest - unit testing
+  - Jest + ts-jest (npm test → jest). 
+  - Supertest
+  - Vitest 
+  - Playwright - UX and REST testing
+  - MSW for mocking APIs.
+- Nx - project lifecycle management
+- Pulumi - PaaS infrastructure provisioning
+
+# Rough Cost/Throughput
 
 ## **Gemma 3 (27B dense)**
 
 Google
 
 ### **Deployment**
+
 - Fits on **1–2 GPUs**
+
 
 | **Hardware** | **GPUs** | **tok/s**    | **$/day**    |
 | ------------ | -------- | ------------ | ------------ |
 | H200         | 2        | ~1,500–2,500 | **$145–240** |
 | B200         | 1–2      | ~3,000–5,000 | **$150–480** |
+
 
 👉 **Best small-model economics**
 
@@ -51,15 +65,19 @@ Google
 Mistral AI
 
 ### **Deployment**
+
 - Single GPU
+
 
 | **Hardware** | **GPUs** | **tok/s**    | **$/day**    |
 | ------------ | -------- | ------------ | ------------ |
 | H200         | 1        | ~2,000–4,000 | **$70–120**  |
 | B200         | 1        | ~5,000–8,000 | **$150–240** |
 
+
 👉 **Ultra-cheap high throughput tier**
 
 References:
- - ChatGPT - Open Source LLM's 2026
+
+- ChatGPT - Open Source LLM's 2026
 
