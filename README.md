@@ -12,7 +12,23 @@ Launch the Gemma3 model on GKE (Google cloud) GPU, verify, test interactively an
 
 # System Overview
 
-![System Overview](./system-overview.svg)
+```mermaid
+flowchart LR
+    HF[(Hugging Face\nModel Hub)]
+    GCS[(GCS Archive\nStorage\n― coldline)]
+    GKE[GKE Cluster\nGPU Node Pool]
+    VLLM[vLLM Serving\nPod + GPU]
+    REST[REST API\n/v1/completions]
+    CHAT[Chat Page\nWeb UI]
+    USER((User))
+
+    HF -- "one-time\ndownload" --> GCS
+    GCS -- "provision &\nload weights" --> GKE
+    GKE -- "schedule" --> VLLM
+    VLLM -- "expose" --> REST
+    REST -- "fetch" --> CHAT
+    USER -- "interact" --> CHAT
+```
 
 # Rough Cost/Throughput 
 

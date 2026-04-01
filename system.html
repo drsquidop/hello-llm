@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hello LLM — System overview</title>
+  <style>
+    :root {
+      --hf: #ff6b35;
+      --hf-soft: #fff0e8;
+      --gcs-border: #0f9d58;
+      --gcs-bg: #e8f5e9;
+      --gcs-accent: #34a853;
+      --gke-border: #4285f4;
+      --gke-bg: #e8f0fe;
+      --gke-accent: #1967d2;
+      --vllm: #7c4dff;
+      --vllm-soft: #ede7f6;
+      --rest: #00bfa5;
+      --rest-soft: #e0f2f1;
+      --chat: #ff5722;
+      --chat-soft: #fbe9e7;
+      --user: #5c6bc0;
+      --user-soft: #e8eaf6;
+      --text: #1a1a2e;
+      --muted: #5f6368;
+      --arrow: #455a64;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: linear-gradient(145deg, #fef6ff 0%, #e3f2fd 40%, #e8f5e9 100%);
+      padding: 2rem 1.5rem 3rem;
+      line-height: 1.45;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.65rem;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+    .diagram {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: stretch;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem 1rem;
+    }
+    .arrow {
+      color: var(--arrow);
+      font-size: 1.75rem;
+      font-weight: 300;
+      flex-shrink: 0;
+      text-shadow: 0 1px 0 #fff;
+    }
+    .arrow.small { font-size: 1.35rem; }
+    .card {
+      border-radius: 14px;
+      padding: 1rem 1.15rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      border: 2px solid rgba(0,0,0,0.06);
+      max-width: 280px;
+    }
+    .card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.05rem;
+    }
+    .card p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .tag {
+      display: inline-block;
+      margin-top: 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.85);
+    }
+    .hf-card {
+      background: linear-gradient(135deg, var(--hf-soft), #ffd6c9);
+      border-color: var(--hf);
+    }
+    .hf-card h3 { color: #c41e00; }
+    .hf-card .tag { color: var(--hf); }
+    .scope {
+      border-radius: 18px;
+      padding: 1.25rem;
+      margin: 0.25rem 0;
+    }
+    .scope-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.75rem;
+      opacity: 0.9;
+    }
+    .scope-gcs {
+      background: linear-gradient(180deg, var(--gcs-bg), #c8e6c9);
+      border: 3px solid var(--gcs-border);
+      box-shadow: 0 6px 20px rgba(15, 157, 88, 0.18);
+    }
+    .scope-gcs .scope-label { color: var(--gcs-accent); }
+    .scope-gke {
+      background: linear-gradient(180deg, var(--gke-bg), #bbdefb);
+      border: 3px solid var(--gke-border);
+      box-shadow: 0 6px 20px rgba(66, 133, 244, 0.2);
+    }
+    .scope-gke .scope-label { color: var(--gke-accent); }
+    .service-line {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 0.35rem;
+      font-family: ui-monospace, monospace;
+    }
+    .gcs-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .gcs-card {
+      background: #fff;
+      border: 2px solid var(--gcs-accent);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      max-width: 340px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .gcs-card h3 { color: var(--gcs-border); margin: 0 0 0.45rem; font-size: 1.05rem; }
+    .gcs-card p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+    .gke-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.85rem;
+    }
+    .svc {
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      border: 2px solid transparent;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .svc h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.98rem;
+    }
+    .svc p { margin: 0; font-size: 0.82rem; color: var(--muted); }
+    .svc-cluster {
+      background: linear-gradient(135deg, #fff, #e3f2fd);
+      border-color: var(--gke-border);
+    }
+    .svc-cluster h4 { color: var(--gke-accent); }
+    .svc-vllm {
+      background: linear-gradient(135deg, var(--vllm-soft), #d1c4e9);
+      border-color: var(--vllm);
+    }
+    .svc-vllm h4 { color: #4527a0; }
+    .svc-rest {
+      background: linear-gradient(135deg, var(--rest-soft), #b2dfdb);
+      border-color: var(--rest);
+    }
+    .svc-rest h4 { color: #00695c; }
+    .svc-chat {
+      background: linear-gradient(135deg, var(--chat-soft), #ffccbc);
+      border-color: var(--chat);
+    }
+    .svc-chat h4 { color: #bf360c; }
+    .user-row {
+      margin-top: 0.5rem;
+    }
+    .user-card {
+      background: linear-gradient(135deg, var(--user-soft), #c5cae9);
+      border: 2px solid var(--user);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      max-width: 300px;
+      box-shadow: 0 4px 14px rgba(92, 107, 192, 0.2);
+    }
+    .user-card h3 { margin: 0 0 0.4rem; color: #303f9f; font-size: 1.05rem; }
+    .user-card p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+    .flow-caption {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+      width: 100%;
+      font-style: italic;
+    }
+    @media (max-width: 640px) {
+      .arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Hello LLM — system overview</h1>
+  <p class="subtitle">Gemma on GKE: from model hub to chat UI</p>
+
+  <div class="diagram">
+    <div class="row">
+      <div class="card hf-card">
+        <h3>Hugging Face Model Hub</h3>
+        <p>One-time download of the model weights.</p>
+        <span class="tag">Source</span>
+      </div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="card hf-card" style="max-width: 200px; text-align: center; padding: 0.85rem;">
+        <p style="font-weight: 600; color: #c41e00; margin: 0;">Weights sync</p>
+        <p style="font-size: 0.8rem; margin: 0.35rem 0 0;">into archive bucket</p>
+      </div>
+    </div>
+    <p class="flow-caption">Coldline keeps artifacts for cheap persistence and fast bring-up</p>
+
+    <div class="scope scope-gcs">
+      <div class="scope-label">Scope — Google Cloud Storage (GCS)</div>
+      <div class="gcs-inner">
+        <div class="gcs-card">
+          <h3>GCS Archive Storage (Coldline)</h3>
+          <p>Cold blob storage for cheap persistence and rapid re-deploy.</p>
+          <p class="service-line">Underlying: Storage → Coldline bucket, object versioning (optional)</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="arrow small" aria-hidden="true">↓</span>
+    </div>
+    <p class="flow-caption">Provision loads weights from GCS into the GPU cluster</p>
+
+    <div class="scope scope-gke">
+      <div class="scope-label">Scope — Google Kubernetes Engine (GKE)</div>
+      <div class="gke-grid">
+        <div class="svc svc-cluster">
+          <h4>GKE Cluster (GPU Node Pool)</h4>
+          <p>Dynamically provisions and loads weights from cold storage.</p>
+          <p class="service-line">Underlying: GKE, GPU node pool, PersistentVolume (optional)</p>
+        </div>
+        <div class="svc svc-vllm">
+          <h4>vLLM Serving Pod</h4>
+          <p>Runs the model on GPU.</p>
+          <p class="service-line">Underlying: Workload → Deployment, GPU resource limits</p>
+        </div>
+        <div class="svc svc-rest">
+          <h4>REST API</h4>
+          <p><code>/v1/completions</code> endpoint.</p>
+          <p class="service-line">Underlying: Service (ClusterIP / LoadBalancer), container port</p>
+        </div>
+        <div class="svc svc-chat">
+          <h4>Chat Page (Web UI)</h4>
+          <p>Minimal interactive chat interface.</p>
+          <p class="service-line">Underlying: Ingress or static host calling the API</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row user-row">
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="user-card">
+        <h3>User</h3>
+        <p>Interacts via the chat page.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
