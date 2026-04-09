@@ -1,5 +1,8 @@
 # [README.md](http://README.md)
 
+# Update
+- 20260409 - the Gemma 4 model was released: https://www.geeky-gadgets.com/gemma-4-benchmarks/ . We should plan on using this model over Gemma 3
+- 
 # Goal
 
 Launch the Gemma3 model on GKE (Google cloud) GPU, verify, test interactively and teardown.
